@@ -90,9 +90,6 @@ class InvalidPlayer(Exception):
   pass
 
 
-# Helpers
-# ...
-
 class Player:
   """Represents the player in the game. It is initialized with player_name and checker_color that the player has chosen."""
 
@@ -224,9 +221,10 @@ class Checkers:
 
   def _get_valid_moves(self, diagonal_squares, piece, is_man=True, is_triple=False):
     """Get list of all valid moves in a diagonal for opponent of given piece type"""
-    valid_moves = []
-    all_captures = []
+    all_moves, all_captures = [], []
+    friendly = False
     N = len(diagonal_squares)
+
     for i in range(N):
       checker = self.get_checker_details(diagonal_squares[i])
 
@@ -239,12 +237,18 @@ class Checkers:
         return []
 
       if checker != None:
-        if piece not in checker or i == N-1:
-          # TODO: friendly jump here?
+        if i == N-1:
+          break
+
+        next_checker = self.get_checker_details(diagonal_squares[i+1])
+        if piece not in checker:
+          # mark for Triple friendly
+          if not friendly and next_checker == None and is_triple:
+            friendly = True
+            continue
           break
 
         jump = 1
-        next_checker = self.get_checker_details(diagonal_squares[i+1])
         if (next_checker != None and not is_triple):
           break
         elif next_checker:
@@ -259,9 +263,9 @@ class Checkers:
           all_captures += [(diagonal_squares[j], True)]
         break
       else:
-        if not valid_moves:
-          valid_moves = [(diagonal_squares[i], False)]
-    return all_captures or valid_moves
+        if not all_moves or friendly:
+          all_moves += [(diagonal_squares[i], False)]
+    return all_captures or all_moves
 
   def _diagonal_squares(self, square, dx, dy):
     """Return diagonal moves from a given square"""
@@ -408,15 +412,20 @@ Player2 = game.create_player("Lucy", "Black")
 """
 
 # game.board[3][4] = 'Black'
+# game.board[4][1] = 'Black_king'
 game.board[4][1] = 'Black_Triple_King'
 game.board[3][2] = 'White'
 game.board[4][3] = 'White'
 game.board[1][4] = None
 game.board[0][5] = None
+game.board[6][3] = None
+game.board[7][4] = None
 
-for _ in range(8):
-  print(game.board[_])
-
+for r in range(8):
+  for c in range(8):
+    print((r, c) if game.board[r][c] else '-----', end=" ")
+  print("")
+print("")
 for r in range(8):
   for c in range(8):
     if game.board[r][c] == 'White':
@@ -432,7 +441,7 @@ for r in range(8):
     elif game.board[r][c] == 'White_king':
       print('Wk', end=' ')
     else:
-      print(' - ', end="")
+      print('-', end=" ")
   print("")
 
 print(
