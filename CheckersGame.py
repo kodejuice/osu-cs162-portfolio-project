@@ -279,6 +279,24 @@ class Checkers:
       squares += [tuple(square)]
     return squares
 
+  def _diagonal_coord(self, start, stop):
+    """Return coordinates in between two points along a diagonal path"""
+    def coords(dxdy):
+      r, c = start
+      dx, dy = dxdy
+      coords = []
+      while (r, c) != stop:
+        r += dx
+        c += dy
+        if not self._in_bound((r, c)):
+          break
+        coords += [(r, c)]
+      return coords
+    r1, c1 = start
+    r2, c2 = stop
+    P = (+(r1 != r2) if r2 >= r1 else -1, -(c1 != c2) if c2 <= c1 else +1)
+    return coords(P)
+
   def _in_bound(self, square):
     """Check if given square position is in bound"""
     row, col = square
@@ -447,3 +465,5 @@ for r in range(8):
 print(
     game._get_moves((4, 1))
 )
+
+print(game._diagonal_coord((0, 0), (4, 4)))
