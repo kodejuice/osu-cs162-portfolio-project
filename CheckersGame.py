@@ -1,76 +1,7 @@
 # Author: Biereagu Sochima
 # GitHub username: kodejuice
-# Date: X/02/2023
-# Description: Checkers game
-
-
-"""
-For this project you will write a class called Checkers that allows two people to play the game of Checkers. This is a variation of the original Checkers game with modified rules. Read about the Game rules in Checkers.pdf
-
-Checkers:
-
-The Checkers object represents the game as played.
-
-The class should contain information about the board and the players. The board is initialized when the Checkers object is created.
-
-It must contain these methods (but may have more if you want):
-
-create_player - takes as parameter the player_name and piece_color that the player wants to play with and creates the player object. The parameter piece_color is a string of value "Black" or "White" representing Black or White checkers pieces respectively. This function returns the player object that has been created.
-
-play_game - takes as parameter player_name, starting_square_location and destination_square_location of the piece that the player wants to move. The square_location is a tuple in format (x,y).
-If a player wants to move a piece from third square in the second row to fourth square in the fifth row, the starting and destination square locations will be (1,2) to (4,3). Following the rules of the game move this piece.
-
-If a player attempts to move a piece out of turn, raise an OutofTurn exception (you'll need to define this exception class).
-If a player does not own the checker present in the square_location or if the square_location does not exist on the baord; raise an InvalidSquare exception (you'll need to define this exception class).
-If the player_name is not valid, raise an InvalidPlayer exception (you'll need to define this exception class).
-This method returns the number of captured pieces, if any, otherwise return 0.
-If the destination piece reaches the end of opponent's side it is promoted as a king on the board. If the piece crosses back to its original side it becomes a triple king.
-If the piece being moved is a king or a triple king assess the move according to the rules of the game.
-
-get_checker_details - takes as parameter a square_location on the board and returns the checker details present in the square_location
-
-Returns None, if no piece is present in the location
-If the square_location does not exist on the board, raise an InvalidSquare exception (use the same exception class that was created for play_game function).
-If black piece is present return "Black"
-If white piece is present return "White"
-If black king piece is present return "Black_king"
-If white king piece is present return "White_king"
-If black triple king piece is present return "Black_Triple_King"
-If white triple king piece is present return "White_Triple_King"
-
-print_board - takes no parameter, prints the current board in the form of an array. Below is an example showing the current board in the initial state (Note, here only the first row is printed, you would print the entire board)
-
-[[None, "White", None, "White", None, "White", None, "White"],....]
-
-*game_winner - takes no parameter, returns the name of player who won the game. If the game has not ended, return "Game has not ended". In this function you need not check this condition - "A less common way to win is when all of your opponent's pieces are blocked so that your opponent can't make any more moves."
-
-Player:
-
-Player object represents the player in the game. It is initialized with player_name and checker_color that the player has chosen. The parameter piece_color is a string of value "Black" or "White".
-
-get_king_count - takes no parameter, returns the number of king pieces that the player has
-get_triple_king_count - takes no parameter, returns the number of triple king pieces that the player has
-get_captured_pieces_count - takes no parameter, returns the number of opponent pieces that the player has captured
-In addition to your file containing the code for the above classes, **you must also submit a file that contains unit tests for your classes. It must have at least five unit tests and use at least two different assert functions.
-
-Your files must be named CheckersGame.py and CheckersGameTester.py
-
-For example, your classes will be used as below:
-
-game = Checkers()
-Player1 = game.create_player("Adam", "White")
-
-Player2 = game.create_player("Lucy", "Black")
-
-game.play_game("Lucy", (5, 6), (4, 7))
-
-game.play_game("Adam", (2,1), (3,0))
-
-game.get_checker_details((3,1))
-
-Player1.get_captured_pieces_count()
-"""
-
+# Date: 18/03/2023
+# Description: Checkers game project
 
 # CheckersGame.py
 
@@ -91,7 +22,7 @@ class InvalidPlayer(Exception):
 
 
 class Player:
-  """Represents the player in the game. It is initialized with player_name and checker_color that the player has chosen."""
+  """Represents the player in the game. It is initialized with player_name and checker_color that the player has chosen"""
 
   def __init__(self, player_name, checker_color):
     self.player_name = player_name
@@ -101,33 +32,33 @@ class Player:
     self.captured_pieces_count = 0
 
   def get_king_count(self):
-    """Returns the number of king pieces that the player has."""
+    """Returns the number of king pieces that the player has"""
     return self.king_count
 
   def get_triple_king_count(self):
-    """Returns the number of triple king pieces that the player has."""
+    """Returns the number of triple king pieces that the player has"""
     return self.triple_king_count
 
   def get_captured_pieces_count(self):
-    """Returns the number of opponent pieces that the player has captured."""
+    """Returns the number of opponent pieces that the player has captured"""
     return self.captured_pieces_count
 
   def increment_king_count(self):
-    """Increases the number of king pieces that the player has."""
+    """Increases the number of king pieces that the player has"""
     self.king_count += 1
 
   def increment_triple_king_count(self):
-    """Increases the number of triple king pieces that the player has."""
+    """Increases the number of triple king pieces that the player has"""
     self.triple_king_count += 1
 
   def increment_captured_pieces_count(self, amount=1):
-    """Increases the number of opponent pieces that the player has captured."""
+    """Increases the number of opponent pieces that the player has captured"""
     self.captured_pieces_count += amount
 
 
 class Checkers:
   """The Checkers object represents the game as played.
-  The class should contain information about the board and the players."""
+  The class should contain information about the board and the players"""
 
   def __init__(self):
     # Initializing the board
@@ -157,7 +88,7 @@ class Checkers:
   def create_player(self, player_name, piece_color):
     """Creates a player object with the given player_name and piece_color.
     The parameter piece_color is a string of value "Black" or "White" representing Black or White checkers pieces respectively.
-    This function returns the player object that has been created."""
+    This function returns the player object that has been created"""
     if piece_color.lower() == 'black':
       index = 0
     else:
@@ -174,7 +105,7 @@ class Checkers:
       If black king piece is present return "Black_king".
       If white king piece is present return "White_king".
       If black triple king piece is present return "Black_Triple_King".
-      If white triple king piece is present return "White_Triple_King"."""
+      If white triple king piece is present return "White_Triple_King""""
     row, col = square_location
     if not self._in_bound((row, col)):
       raise InvalidSquare("Invalid square entered.")
@@ -187,7 +118,7 @@ class Checkers:
     If the player_name is not valid, raise an InvalidPlayer exception.
     If a player does not own the checker present in the square_location or if the square_location does not exist on the baord; raise an InvalidSquare exception.
     This method returns the number of captured pieces, if any, otherwise return 0.
-    If the destination piece reaches the end of opponent's side it is promoted as a king on the board. If the piece crosses back to its original side it becomes a triple king."""
+    If the destination piece reaches the end of opponent's side it is promoted as a king on the board. If the piece crosses back to its original side it becomes a triple king"""
 
     # Check if the start and destination squares are valid
     if not self._in_bound(start) or not self._in_bound(destination):
@@ -216,7 +147,7 @@ class Checkers:
       raise InvalidSquare("Invalid move.")
 
     curr_move = [m for m in valid_moves if m[0] == destination][0]
-    is_capture = curr_move[1] == True
+    is_capture = curr_move[1] > 0
 
     # Move the piece
     captures, _promotion = self._play_move(start, destination, is_capture)
@@ -231,7 +162,7 @@ class Checkers:
     if is_capture:
       # check if the next move is a capture
       next_moves = self._get_legal_moves(destination)
-      if next_moves and next_moves[0][1] == True:
+      if next_moves and next_moves[0][1] > 0:
         # continue capture
         return capture_count + self.play_game(player_name, destination, next_moves[0][0])
 
@@ -239,7 +170,32 @@ class Checkers:
     self.player_to_move_index = (self.player_to_move_index + 1) % 2
     return capture_count
 
+  def game_winner(self):
+    p1_moves = self._get_player_moves(0)
+    p2_moves = self._get_player_moves(1)
+    if p1_moves or p2_moves:
+      return "Game has not ended"
+    if p1_moves:
+      return self.players[0].player_name
+    return self.players[1].player_name
+
   # HELPER Methods
+
+  def _get_player_moves(self, player_index):
+    player = self.players[player_index]
+    color = player.checker_color.lower()
+    legal_moves = []
+    for r in range(8):
+      for c in range(8):
+        piece = self.board[r][c]
+        if piece and color in piece.lower():
+          square_moves = self._get_legal_moves((r, c))
+          # [(start, destination, capture_count), ...]
+          square_moves = [((r, c), m[0], m[1]) for m in square_moves]
+          legal_moves += square_moves
+    max_capture_count = max(m[2] for m in legal_moves)
+    captures = [m for m in legal_moves if m[2] == max_capture_count]
+    return captures or legal_moves
 
   def _get_legal_moves(self, square_location, check_best_capture=True):
     """Return all legal moves from a given square location"""
@@ -281,19 +237,19 @@ class Checkers:
       bottom_right_moves = self._get_valid_moves(bottom_right_squares, 'Black')
       moves = bottom_left_moves + bottom_right_moves
 
-    captures = [m for m in moves if m[1] == True]
+    captures = [m for m in moves if m[1] > 0]
 
     # return the best capture move (maximum capture) if we have to
     if captures and check_best_capture:
       max_captures = self._get_max_capture_moves(square_location)
-      return [(move[0], True) for move in max_captures]
+      return max_captures
 
     return captures or moves
 
   def _get_max_capture_moves(self, square_location):
     """Return the capture moves that would lead to a maximum capture from given square location"""
     moves = self._get_legal_moves(square_location, False)
-    if not moves or moves[0][1] == False:
+    if not moves or moves[0][1] < 1:
       # moves are not captures
       return [(None, 0)]
 
@@ -361,7 +317,9 @@ class Checkers:
       self.board[start[0]][start[1]] = promoted
 
   def _get_valid_moves(self, diagonal_squares, piece, is_man=True, is_triple=False):
-    """Get list of all valid moves in a diagonal for opponent of given piece type"""
+    """Get list of all valid moves in a diagonal for opponent of given piece type
+    # Returns: [(move1, capture_count), ...]
+    """
     all_moves, all_captures = [], []
     friendly = False
     N = len(diagonal_squares)
@@ -371,10 +329,10 @@ class Checkers:
 
       if is_man:
         if checker == None:
-          return [(diagonal_squares[i], False)]
+          return [(diagonal_squares[i], 0)]
         if piece in checker:
           if i < N-1 and self.get_checker_details(diagonal_squares[i+1]) == None:
-            return [(diagonal_squares[i+1], True)]
+            return [(diagonal_squares[i+1], 1)]
         return []
 
       if checker != None:
@@ -401,10 +359,10 @@ class Checkers:
           c = self.get_checker_details(diagonal_squares[j])
           if c != None:
             break
-          all_captures += [(diagonal_squares[j], True)]
+          all_captures += [(diagonal_squares[j], jump)]
         break
       elif not all_moves or friendly:
-        all_moves += [(diagonal_squares[i], False)]
+        all_moves += [(diagonal_squares[i], 0)]
     return all_captures or all_moves
 
   def _diagonal_squares(self, square, dx, dy):
@@ -483,7 +441,7 @@ game.board[1][4] = None
 game.board[2][5] = 'Black'
 game.board[5][6] = 'White'
 game.board[4][3] = 'White'
-game.board[5][2] = 'Black_king'
+game.board[5][2] = 'Black_Triple_king'
 game.board[6][3] = 'White'
 game.board[0][1] = None
 game.board[0][5] = None
@@ -530,9 +488,12 @@ dump('INIT')
 # game._undo_play_move((4, 1), (1, 4), pieces)
 # dump('undo capture')
 
-M = game._get_legal_moves((5, 2))
-print(M)
+# M = game._get_legal_moves((5, 2))
+# print(M)
+# game.play_game('Lucy', (5, 2), (7, 4))
+# dump('POST-MOVE')
 
-game.play_game('Lucy', (5, 2), (7, 4))
+print(game._get_player_moves(0))
+print(game._get_player_moves(1))
 
-dump('POST-MOVE')
+print(game.game_winner())
