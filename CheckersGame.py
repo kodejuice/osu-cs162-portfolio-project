@@ -180,7 +180,7 @@ class Checkers:
       raise InvalidSquare("Invalid square entered.")
     return self.board[row][col]
 
-  def play_game(self, player_name, start_location, destination_location):
+  def play_game(self, player_name, start, destination):
     """Makes a move with the given player_name, starting_square_location and destination_square_location of the piece.
     The square_location is a tuple in format (x,y).
     If a player attempts to move a piece out of turn, raise an OutofTurn exception.
@@ -190,7 +190,7 @@ class Checkers:
     If the destination piece reaches the end of opponent's side it is promoted as a king on the board. If the piece crosses back to its original side it becomes a triple king."""
 
     # Check if the start and destination squares are valid.
-    if not self._in_bound(start_location) or not self._in_bound(destination_location):
+    if not self._in_bound(start) or not self._in_bound(destination):
       raise InvalidSquare("Square location is not valid.")
 
     player_names = [(p.player_name if p else None) for p in self.players]
@@ -203,38 +203,35 @@ class Checkers:
 
     player = self.players[self.player_to_move_index]
 
-    piece = self.get_checker_details(start_location)
+    piece = self.get_checker_details(start)
     if piece == None or player.checker_color.lower() not in piece.lower():
       raise InvalidSquare(
           "Player does not own the checker present at the given square location.")
 
     # Get all valid moves for the given start location.
-    valid_moves = self._get_legal_moves(start_location)
+    valid_moves = self._get_legal_moves(start)
 
     # Check if the destination square is one of the valid moves.
-    if destination_location not in [m[0] for m in valid_moves]:
+    if destination not in [m[0] for m in valid_moves]:
       raise InvalidSquare("Invalid move.")
 
-    curr_move = [m for m in valid_moves if m[0] == destination_location][0]
+    curr_move = [m for m in valid_moves if m[0] == destination][0]
     is_capture = curr_move[1] == True
 
     # Move the piece.
-    capture_count = len(self._play_move(start_location, destination_location, is_capture))
+    captures, _promotion = self._play_move(start, destination, is_capture)
+    capture_count = len(captures)
     player.increment_captured_pieces_count(capture_count)
 
     if is_capture:
       # check if the next move is a capture
-      next_moves = self._get_legal_moves(destination_location)
+      next_moves = self._get_legal_moves(destination)
       if next_moves and next_moves[0][1] == True:
         # continue capture
-        return capture_count + self.play_game(player_name, destination_location, next_moves[0][0])
+        return capture_count + self.play_game(player_name, destination, next_moves[0][0])
 
     # switch turn to next player
     self.player_to_move_index = (self.player_to_move_index + 1) % 2
-
-    # piece promotion check
-    # ...
-
     return capture_count
 
   # HELPER Methods
@@ -281,39 +278,39 @@ class Checkers:
 
     captures = [m for m in moves if m[1] == True]
 
-    # return the best capture move (maximum capture)
-    # if we have to
+    # return the best capture move (maximum capture) if we have to
     if captures and check_best_capture:
-      return [(self._get_max_capture_move(square_location)[0], True)]
+      max_captures = self._get_max_capture_moves(square_location)
+      return [(move[0], True) for move in max_captures]
 
     return captures or moves
 
-  def _get_max_capture_move(self, square_location):
-    """Return the capture move that would lead to a maximum capture from given square location"""
-
+  def _get_max_capture_moves(self, square_location):
+    """Return the capture moves that would lead to a maximum capture from given square location"""
     moves = self._get_legal_moves(square_location, False)
     if not moves or moves[0][1] == False:
       # moves are not captures
-      return None, 0
+      return [(None, 0)]
 
-    best_move, max_capture_count = moves[0][0], 0
-    for move in moves:
+    captures = []
+    max_capture_count = -1
+    for move, is_capture in moves:
       # do move
-      pieces = self._play_move(square_location, move[0], move[1])
+      pieces, promotion = self._play_move(square_location, move, is_capture)
       captured = len(pieces)
-      next_best = self._get_max_capture_move(move[0])
+      next_best = self._get_max_capture_moves(move)[0]
       captured += next_best[1]
       # undo move
-      self._undo_play_move(square_location, move[0], pieces)
+      self._undo_play_move(square_location, move, pieces, promotion)
+      captures += [(move, captured)]
+      max_capture_count = max(max_capture_count, captured)
 
-      if captured > max_capture_count:
-        best_move = move[0]
-        max_capture_count = captured
-    return best_move, max_capture_count
+    return [move for move in captures if move[1] == max_capture_count]
 
   def _play_move(self, start, destination, is_capture):
     """Play a move on the board, move piece at start location to destination and return all pieces captured"""
-    self.board[destination[0]][destination[1]] = self.board[start[0]][start[1]]
+    piece = self.board[start[0]][start[1]]
+    self.board[destination[0]][destination[1]] = piece
     self.board[start[0]][start[1]] = None
     # capture checkers
     captured = []
@@ -323,9 +320,29 @@ class Checkers:
         if captured_checker != None:
           captured += [(coord, captured_checker)]
           self.board[coord[0]][coord[1]] = None
-    return captured
 
-  def _undo_play_move(self, start, destination, captured_checkers):
+    # Check for promotion
+    promoted = None
+    # Promote to King if the piece reaches opponent's edge.
+    if piece.lower() == 'white' and destination[0] == 0:
+      self.board[destination[0]][destination[1]] = 'White_king'
+      promoted = 'White'
+    elif piece.lower() == 'black' and destination[0] == 7:
+      self.board[destination[0]][destination[1]] = 'Black_king'
+      promoted = 'Black'
+
+    # Promote to Triple King if the piece returns to its original side.
+    if not self._is_triple_king(piece) and self._is_king(piece):
+      if not self._is_black_piece(piece) and destination[0] == 0:
+        self.board[destination[0]][destination[1]] = 'White_Triple_King'
+        promoted = 'White_king'
+      if self._is_black_piece(piece) and destination[0] == 7:
+        self.board[destination[0]][destination[1]] = 'Black_Triple_King'
+        promoted = 'Black_king'
+
+    return captured, promoted
+
+  def _undo_play_move(self, start, destination, captured_checkers, promoted):
     """Undo a played move on the board, return piece from destination to start location
       and place all captured checkers at their original positions"""
     self.board[start[0]][start[1]] = self.board[destination[0]][destination[1]]
@@ -334,6 +351,9 @@ class Checkers:
     for checkers in captured_checkers:
       coord, piece = checkers
       self.board[coord[0]][coord[1]] = piece
+    # undo promoted
+    if promoted:
+      self.board[start[0]][start[1]] = promoted
 
   def _get_valid_moves(self, diagonal_squares, piece, is_man=True, is_triple=False):
     """Get list of all valid moves in a diagonal for opponent of given piece type"""
@@ -448,29 +468,21 @@ Player2 = game.create_player("Lucy", "Black")
 # - get_checker_details
 
 
-"""
-[None, 'White', None, 'White', None, 'White', None, 'White']
-['White', None, 'White', None, 'White', None, 'White', None]
-[None, 'White', None, 'White', None, 'White', None, 'White']
-[None, None, None, None, None, None, None, None]
-[None, None, None, None, None, None, None, None]
-['Black', None, 'Black', None, 'Black', None, 'Black', None]
-[None, 'Black', None, 'Black', None, 'Black', None, 'Black']
-['Black', None, 'Black', None, 'Black', None, 'Black', None]
-"""
-
 # game.board[3][4] = 'Black'
 # game.board[4][1] = 'Black_king'
-game.board[4][1] = 'Black_Triple_King'
 game.board[3][2] = 'White'
 game.board[4][3] = 'White'
 game.board[5][2] = 'White'
 game.board[5][4] = 'White'
 game.board[1][4] = None
 game.board[2][5] = 'Black'
+game.board[5][6] = 'White'
+game.board[4][3] = 'White'
+game.board[5][2] = 'Black_king'
+game.board[6][3] = 'White'
 game.board[0][1] = None
 game.board[0][5] = None
-game.board[6][3] = None
+# game.board[6][3] = None
 game.board[7][4] = None
 
 for r in range(8):
@@ -485,20 +497,20 @@ def dump(title=""):
     print(f"[{title.upper()}]:")
   for r in range(8):
     for c in range(8):
-      if game.board[r][c] == 'White':
-        print('W', end=' ')
-      elif game.board[r][c] == 'Black':
-        print('B', end=' ')
-      elif game.board[r][c] == 'Black_king':
-        print('Bk', end=' ')
-      elif game.board[r][c] == 'Black_Triple_King':
-        print('B*', end=' ')
-      elif game.board[r][c] == 'White_Triple_King':
-        print('W*', end=' ')
-      elif game.board[r][c] == 'White_king':
-        print('Wk', end=' ')
-      else:
+      if not game.board[r][c]:
         print('-', end=" ")
+      elif game.board[r][c].lower() == 'white':
+        print('W', end=' ')
+      elif game.board[r][c].lower() == 'black':
+        print('B', end=' ')
+      elif game.board[r][c].lower() == 'black_king':
+        print('Bk', end=' ')
+      elif game.board[r][c].lower() == 'black_triple_king':
+        print('B*', end=' ')
+      elif game.board[r][c].lower() == 'white_triple_king':
+        print('W*', end=' ')
+      elif game.board[r][c].lower() == 'white_king':
+        print('Wk', end=' ')
     print("")
   print('_______________')
 
@@ -513,9 +525,9 @@ dump('INIT')
 # game._undo_play_move((4, 1), (1, 4), pieces)
 # dump('undo capture')
 
-M = game._get_legal_moves((4, 1))
+M = game._get_legal_moves((5, 2))
 print(M)
 
-game.play_game('Lucy', (4,1), (6,3))
+game.play_game('Lucy', (5, 2), (7, 4))
 
 dump('POST-MOVE')
