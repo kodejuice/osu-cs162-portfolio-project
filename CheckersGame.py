@@ -189,7 +189,7 @@ class Checkers:
     This method returns the number of captured pieces, if any, otherwise return 0.
     If the destination piece reaches the end of opponent's side it is promoted as a king on the board. If the piece crosses back to its original side it becomes a triple king."""
 
-    # Check if the start and destination squares are valid.
+    # Check if the start and destination squares are valid
     if not self._in_bound(start) or not self._in_bound(destination):
       raise InvalidSquare("Square location is not valid.")
 
@@ -197,7 +197,7 @@ class Checkers:
     if player_name not in player_names:
       raise InvalidPlayer("Player name is not valid.")
 
-    # Check if it is the turn of the respective player.
+    # Check if it is the turn of the respective player
     if player_name != self.players[self.player_to_move_index].player_name:
       raise OutofTurn("It is not the turn of the respective player.")
 
@@ -208,20 +208,25 @@ class Checkers:
       raise InvalidSquare(
           "Player does not own the checker present at the given square location.")
 
-    # Get all valid moves for the given start location.
+    # Get all valid moves for the given start location
     valid_moves = self._get_legal_moves(start)
 
-    # Check if the destination square is one of the valid moves.
+    # Check if the destination square is one of the valid moves
     if destination not in [m[0] for m in valid_moves]:
       raise InvalidSquare("Invalid move.")
 
     curr_move = [m for m in valid_moves if m[0] == destination][0]
     is_capture = curr_move[1] == True
 
-    # Move the piece.
+    # Move the piece
     captures, _promotion = self._play_move(start, destination, is_capture)
     capture_count = len(captures)
     player.increment_captured_pieces_count(capture_count)
+    if _promotion:
+      if 'ing' in _promotion:  # a king was promoted
+        player.increment_triple_king_count()
+      else:  # normal piece promotion
+        player.increment_king_count()
 
     if is_capture:
       # check if the next move is a capture
@@ -297,13 +302,13 @@ class Checkers:
     for move, is_capture in moves:
       # do move
       pieces, promotion = self._play_move(square_location, move, is_capture)
-      captured = len(pieces)
+      captured_count = len(pieces)
       next_best = self._get_max_capture_moves(move)[0]
-      captured += next_best[1]
+      captured_count += next_best[1]
       # undo move
       self._undo_play_move(square_location, move, pieces, promotion)
-      captures += [(move, captured)]
-      max_capture_count = max(max_capture_count, captured)
+      captures += [(move, captured_count)]
+      max_capture_count = max(max_capture_count, captured_count)
 
     return [move for move in captures if move[1] == max_capture_count]
 
@@ -323,7 +328,7 @@ class Checkers:
 
     # Check for promotion
     promoted = None
-    # Promote to King if the piece reaches opponent's edge.
+    # Promote to King if the piece reaches opponent's edge
     if piece.lower() == 'white' and destination[0] == 0:
       self.board[destination[0]][destination[1]] = 'White_king'
       promoted = 'White'
@@ -331,7 +336,7 @@ class Checkers:
       self.board[destination[0]][destination[1]] = 'Black_king'
       promoted = 'Black'
 
-    # Promote to Triple King if the piece returns to its original side.
+    # Promote to Triple King if the piece returns to its original side
     if not self._is_triple_king(piece) and self._is_king(piece):
       if not self._is_black_piece(piece) and destination[0] == 0:
         self.board[destination[0]][destination[1]] = 'White_Triple_King'
