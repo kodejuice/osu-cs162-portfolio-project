@@ -162,15 +162,19 @@ class Checkers:
     captures, _ = self._play_move(start, destination, is_capture)
     capture_count = len(captures)
 
+    next_move_is_capture = False
+
     if is_capture:
       # check if the next move is a capture
       next_moves = self._get_legal_moves(destination)
       if next_moves and next_moves[0][1] > 0:
         # continue capture
-        return capture_count + self.play_game(player_name, destination, next_moves[0][0])
+        # return capture_count + self.play_game(player_name, destination, next_moves[0][0])
+        next_move_is_capture = True
 
-    # switch turn to next player
-    self._switch_player_turn()
+    if not next_move_is_capture:
+      # switch turn to next player
+      self._switch_player_turn()
 
     return capture_count
 

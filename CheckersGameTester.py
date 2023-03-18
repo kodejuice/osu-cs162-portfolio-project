@@ -59,17 +59,17 @@ class TestCheckersGame(unittest.TestCase):
       self.game.play_game("Lucy", (7, 4), (5, 2))
 
     # 3 captures for second move
-    self.assertEqual(self.game.play_game('Lucy', (7, 4), (5, 6)), 3)
-    self.assertEqual(self.player2.get_captured_pieces_count(), 3)
+    self.assertEqual(self.game.play_game('Lucy', (7, 4), (5, 6)), 1)
+    self.assertEqual(self.player2.get_captured_pieces_count(), 1)
 
     # test the new board position
     self.assertEqual(self.game.board, B([
         ['-', '-', '-', '-', '-', '-', '-', '-'],
+        ['-', '-', '-', '-', '-', '-', '-', '-'],
+        ['-', '-', '-', '-', '-', 'W', '-', '-'],
+        ['-', '-', '-', '-', '-', '-', '-', '-'],
+        ['-', '-', '-', '-', '-', 'W', '-', '-'],
         ['-', '-', '-', '-', '-', '-', 'B', '-'],
-        ['-', '-', '-', '-', '-', '-', '-', '-'],
-        ['-', '-', '-', '-', '-', '-', '-', '-'],
-        ['-', '-', '-', '-', '-', '-', '-', '-'],
-        ['-', '-', '-', '-', '-', '-', '-', '-'],
         ['-', '-', '-', 'W', '-', '-', '-', '-'],
         ['-', '-', '-', '-', '-', '-', '-', '-'],
     ]))
