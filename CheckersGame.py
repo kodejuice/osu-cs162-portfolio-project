@@ -166,7 +166,8 @@ class Checkers:
         return capture_count + self.play_game(player_name, destination, next_moves[0][0])
 
     # switch turn to next player
-    self.player_to_move_index = (self.player_to_move_index + 1) % 2
+    self._switch_player_turn()
+
     return capture_count
 
   def game_winner(self):
@@ -190,6 +191,10 @@ class Checkers:
       return self.players[WHITE].player_name
 
   # HELPER Methods
+
+  def _switch_player_turn(self):
+    """Switch play turn to next player"""
+    self.player_to_move_index = (self.player_to_move_index + 1) % 2
 
   def _get_player_moves(self, player_index):
     """Return the moves of given player"""
