@@ -77,7 +77,7 @@ class TestCheckersGame(unittest.TestCase):
   def test_king_promotion(self):
     # Test King promotion
     test_board = B([
-        ['-', '-', '-', '-', '-', '-', '-', '-'],
+        ['-', '-', '-', 'W', '-', '-', '-', '-'],
         ['-', '-', 'B', '-', '-', '-', '-', '-'],
         ['-', '-', '-', '-', '-', '-', '-', '-'],
         ['-', '-', '-', '-', '-', '-', '-', '-'],
@@ -96,7 +96,7 @@ class TestCheckersGame(unittest.TestCase):
 
     # check new baord position
     self.assertEqual(self.game.board, B([
-        ['-', 'Bk', '-', '-', '-', '-', '-', '-'],
+        ['-', 'Bk', '-', 'W', '-', '-', '-', '-'],
         ['-', '-', '-', '-', '-', '-', '-', '-'],
         ['-', '-', '-', '-', '-', '-', '-', '-'],
         ['-', '-', '-', '-', '-', '-', '-', '-'],
@@ -120,7 +120,7 @@ class TestCheckersGame(unittest.TestCase):
 
     # check new baord position
     self.assertEqual(self.game.board, B([
-        ['-', 'Bk', '-', '-', '-', '-', '-', '-'],
+        ['-', 'Bk', '-', 'W', '-', '-', '-', '-'],
         ['-', '-', '-', '-', '-', '-', '-', '-'],
         ['-', '-', '-', '-', '-', '-', '-', '-'],
         ['-', '-', '-', '-', '-', '-', '-', '-'],
@@ -130,6 +130,25 @@ class TestCheckersGame(unittest.TestCase):
         ['-', '-', '-', '-', 'Wk', '-', '-', '-'],
     ]))
 
+    # test king count reduction
+    self.game.play_game('Lucy', (0,1), (1,2)) # move black king foward
+    self.game.play_game('Adam', (0,3), (2,1)) # capture black king
+
+    # check position
+    self.assertEqual(self.game.board, B([
+        ['-', '-', '-', '-', '-', '-', '-', '-'],
+        ['-', '-', '-', '-', '-', '-', '-', '-'],
+        ['-', 'W', '-', '-', '-', '-', '-', '-'],
+        ['-', '-', '-', '-', '-', '-', '-', '-'],
+        ['-', 'W', '-', '-', '-', '-', '-', '-'],
+        ['-', '-', '-', '-', '-', '-', '-', '-'],
+        ['-', '-', '-', '-', '-', '-', '-', '-'],
+        ['-', '-', '-', '-', 'Wk', '-', '-', '-'],
+    ]))
+
+    # check black king count
+    self.assertEqual(self.player2.get_king_count(), 0)
+
   def test_triple_king_promotion(self):
     # Test Triple King Promotion
     test_board = B([
@@ -137,7 +156,7 @@ class TestCheckersGame(unittest.TestCase):
         ['-', '-', 'Wk', '-', '-', '-', '-', '-'],
         ['-', '-', '-', '-', '-', '-', '-', '-'],
         ['-', '-', '-', '-', '-', '-', '-', '-'],
-        ['-', '-', '-', '-', '-', '-', '-', '-'],
+        ['Wk', '-', '-', '-', '-', '-', '-', '-'],
         ['-', '-', '-', '-', '-', '-', '-', '-'],
         ['-', '-', 'Bk', '-', '-', '-', '-', '-'],
         ['-', '-', '-', '-', '-', '-', '-', '-'],
@@ -151,6 +170,39 @@ class TestCheckersGame(unittest.TestCase):
     # promote white to triple king
     self.game.play_game('Adam', (1, 2), (0, 1))
     self.assertEqual(self.player1.get_triple_king_count(), 1)
+
+    # check position
+    self.assertEqual(self.game.board, B([
+        ['-', 'W*', '-', '-', '-', '-', '-', '-'],
+        ['-', '-', '-', '-', '-', '-', '-', '-'],
+        ['-', '-', '-', '-', '-', '-', '-', '-'],
+        ['-', '-', '-', '-', '-', '-', '-', '-'],
+        ['Wk', '-', '-', '-', '-', '-', '-', '-'],
+        ['-', '-', '-', '-', '-', '-', '-', '-'],
+        ['-', '-', '-', '-', '-', '-', '-', '-'],
+        ['-', 'B*', '-', '-', '-', '-', '-', '-'],
+    ]))
+    
+    # move black piece foward
+    self.game.play_game('Lucy', (7,1), (6,2))
+
+    # capture triple king
+    self.game.play_game('Adam', (4,0), (7,3))
+
+    # triple king captured
+    self.assertEqual(self.player2.get_triple_king_count(), 0)
+
+    # check position
+    self.assertEqual(self.game.board, B([
+        ['-', 'W*', '-', '-', '-', '-', '-', '-'],
+        ['-', '-', '-', '-', '-', '-', '-', '-'],
+        ['-', '-', '-', '-', '-', '-', '-', '-'],
+        ['-', '-', '-', '-', '-', '-', '-', '-'],
+        ['-', '-', '-', '-', '-', '-', '-', '-'],
+        ['-', '-', '-', '-', '-', '-', '-', '-'],
+        ['-', '-', '-', '-', '-', '-', '-', '-'],
+        ['-', '-', '-', 'Wk', '-', '-', '-', '-'],
+    ]))
 
   def test_friendly_jump(self):
     # Test Friendly jump

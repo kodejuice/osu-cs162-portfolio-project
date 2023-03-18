@@ -117,12 +117,12 @@ class Checkers:
     return self.board[row][col]
 
   def play_game(self, player_name, start, destination):
-    """Makes a move with the given player_name, starting_square_location and destination_square_location of the piece.
-    The square_location is a tuple in format (x,y).
-    If a player attempts to move a piece out of turn, raise an OutofTurn exception.
-    If the player_name is not valid, raise an InvalidPlayer exception.
-    If a player does not own the checker present in the square_location or if the square_location does not exist on the baord; raise an InvalidSquare exception.
-    This method returns the number of captured pieces, if any, otherwise return 0.
+    """Makes a move with the given player_name, starting_square_location and destination_square_location of the piece
+    The square_location is a tuple in format (x,y)
+    If a player attempts to move a piece out of turn, raise an OutofTurn exception
+    If the player_name is not valid, raise an InvalidPlayer exception
+    If a player does not own the checker present in the square_location or if the square_location does not exist on the baord; raise an InvalidSquare exception
+    This method returns the number of captured pieces, if any, otherwise return 0
     If the destination piece reaches the end of opponent's side it is promoted as a king on the board. If the piece crosses back to its original side it becomes a triple king"""
 
     # Check if the start and destination squares are valid
@@ -285,12 +285,15 @@ class Checkers:
     return [move for move in captures if move[1] == max_capture_count]
 
   def _play_move(self, start, destination, is_capture):
-    """Play a move on the board, move piece at start location to destination and return all pieces captured"""
+    """Play a move on the board, move piece at start location to destination and return all pieces captured
+    and promoted piece"""
     piece = self.board[start[0]][start[1]]
     self.board[destination[0]][destination[1]] = piece
     self.board[start[0]][start[1]] = None
 
     player = self.players[self.player_to_move_index]
+    enemy = self.players[1 - self.player_to_move_index]
+
     # capture checkers
     captured = []
     if is_capture:
@@ -298,6 +301,12 @@ class Checkers:
         captured_checker = self.get_checker_details(coord)
         if captured_checker != None:
           captured += [(coord, captured_checker)]
+
+          if self._is_triple_king(captured_checker):
+            enemy.increment_triple_king_count(-1)
+          elif self._is_king(captured_checker):
+            enemy.increment_king_count(-1)
+
           self.board[coord[0]][coord[1]] = None
       player.increment_captured_pieces_count(len(captured))
 
@@ -333,10 +342,17 @@ class Checkers:
     self.board[destination[0]][destination[1]] = None
 
     player = self.players[self.player_to_move_index]
+    enemy = self.players[1 - self.player_to_move_index]
+
     # restore checkers
     for checkers in captured_checkers:
       coord, piece = checkers
       self.board[coord[0]][coord[1]] = piece
+      if self._is_triple_king(piece):
+        enemy.increment_triple_king_count()
+      elif self._is_king(piece):
+        enemy.increment_king_count()
+
     # reduce captured pieces count
     player.increment_captured_pieces_count(-len(captured_checkers))
 
