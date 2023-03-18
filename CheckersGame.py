@@ -198,6 +198,7 @@ class Checkers:
   # HELPER Methods
 
   def _get_player_moves(self, player_index):
+    """Return the moves of given player"""
     player = self.players[player_index]
     color = player.checker_color.lower()
     legal_moves = []
