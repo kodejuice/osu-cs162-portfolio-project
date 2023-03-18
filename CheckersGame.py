@@ -89,6 +89,10 @@ class Checkers:
           if col % 2 == 0:
             self.board[row][col] = "Black"
 
+  def print_board(self):
+    """Print the game board"""
+    print(self.board)
+
   def create_player(self, player_name, piece_color):
     """Creates a player object with the given player_name and piece_color.
     The parameter piece_color is a string of value "Black" or "White" representing Black or White checkers pieces respectively.
@@ -169,9 +173,6 @@ class Checkers:
     self._switch_player_turn()
 
     return capture_count
-
-  def print_board(self):
-    print(self.board)
 
   def game_winner(self):
     p1_moves = self._get_player_moves(BLACK)
