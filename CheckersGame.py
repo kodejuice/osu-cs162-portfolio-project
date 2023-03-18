@@ -47,13 +47,13 @@ class Player:
     """Returns the number of opponent pieces that the player has captured"""
     return self.captured_pieces_count
 
-  def increment_king_count(self):
+  def increment_king_count(self, amount=1):
     """Increases the number of king pieces that the player has"""
-    self.king_count += 1
+    self.king_count += amount
 
-  def increment_triple_king_count(self):
+  def increment_triple_king_count(self, amount=1):
     """Increases the number of triple king pieces that the player has"""
-    self.triple_king_count += 1
+    self.triple_king_count += amount
 
   def increment_captured_pieces_count(self, amount=1):
     """Increases the number of opponent pieces that the player has captured"""
@@ -155,14 +155,8 @@ class Checkers:
     is_capture = curr_move[1] > 0
 
     # Move the piece
-    captures, _promotion = self._play_move(start, destination, is_capture)
+    captures, _ = self._play_move(start, destination, is_capture)
     capture_count = len(captures)
-    player.increment_captured_pieces_count(capture_count)
-    if _promotion:
-      if 'ing' in _promotion:  # a king was promoted
-        player.increment_triple_king_count()
-      else:  # normal piece promotion
-        player.increment_king_count()
 
     if is_capture:
       # check if the next move is a capture
@@ -290,6 +284,8 @@ class Checkers:
     piece = self.board[start[0]][start[1]]
     self.board[destination[0]][destination[1]] = piece
     self.board[start[0]][start[1]] = None
+
+    player = self.players[self.player_to_move_index]
     # capture checkers
     captured = []
     if is_capture:
@@ -298,6 +294,7 @@ class Checkers:
         if captured_checker != None:
           captured += [(coord, captured_checker)]
           self.board[coord[0]][coord[1]] = None
+      player.increment_captured_pieces_count(len(captured))
 
     # Check for promotion
     promoted = None
@@ -305,18 +302,22 @@ class Checkers:
     if piece.lower() == 'white' and destination[0] == 7:
       self.board[destination[0]][destination[1]] = 'White_king'
       promoted = 'White'
+      player.increment_king_count()
     elif piece.lower() == 'black' and destination[0] == 0:
       self.board[destination[0]][destination[1]] = 'Black_king'
       promoted = 'Black'
+      player.increment_king_count()
 
     # Promote to Triple King if the piece returns to its original side
     if not self._is_triple_king(piece) and self._is_king(piece):
       if not self._is_black_piece(piece) and destination[0] == 0:
         self.board[destination[0]][destination[1]] = 'White_Triple_King'
         promoted = 'White_king'
+        player.increment_triple_king_count()
       if self._is_black_piece(piece) and destination[0] == 7:
         self.board[destination[0]][destination[1]] = 'Black_Triple_King'
         promoted = 'Black_king'
+        player.increment_triple_king_count()
 
     return captured, promoted
 
@@ -325,13 +326,23 @@ class Checkers:
       and place all captured checkers at their original positions"""
     self.board[start[0]][start[1]] = self.board[destination[0]][destination[1]]
     self.board[destination[0]][destination[1]] = None
+
+    player = self.players[self.player_to_move_index]
     # restore checkers
     for checkers in captured_checkers:
       coord, piece = checkers
       self.board[coord[0]][coord[1]] = piece
-    # undo promoted
+    # reduce captured pieces count
+    player.increment_captured_pieces_count(-len(captured_checkers))
+
+    # undo promotion
     if promoted:
       self.board[start[0]][start[1]] = promoted
+      # reduce king, triple king count
+      if 'ing' in promoted:  # a king was promoted to triple
+        player.increment_triple_king_count(-1)
+      else:
+        player.increment_king_count(-1)
 
   def _get_valid_moves(self, diagonal_squares, piece, is_man=True, is_triple=False):
     """Get list of all valid moves in a diagonal for opponent of given piece type
