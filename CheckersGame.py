@@ -170,6 +170,9 @@ class Checkers:
 
     return capture_count
 
+  def print_board(self):
+    print(self.board)
+
   def game_winner(self):
     p1_moves = self._get_player_moves(BLACK)
     p2_moves = self._get_player_moves(WHITE)
