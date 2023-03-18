@@ -21,6 +21,10 @@ class InvalidPlayer(Exception):
   pass
 
 
+BLACK = 0
+WHITE = 1
+
+
 class Player:
   """Represents the player in the game. It is initialized with player_name and checker_color that the player has chosen"""
 
@@ -90,11 +94,12 @@ class Checkers:
     The parameter piece_color is a string of value "Black" or "White" representing Black or White checkers pieces respectively.
     This function returns the player object that has been created"""
     if piece_color.lower() == 'black':
-      index = 0
+      index = BLACK
     else:
-      index = 1
+      index = WHITE
     p = Player(player_name, piece_color)
     self.players[index] = p
+    return p
 
   def get_checker_details(self, square_location):
     """Takes as parameter a square_location on the board and returns the checker details present in the square_location.
@@ -105,7 +110,7 @@ class Checkers:
       If black king piece is present return "Black_king".
       If white king piece is present return "White_king".
       If black triple king piece is present return "Black_Triple_King".
-      If white triple king piece is present return "White_Triple_King""""
+      If white triple king piece is present return "White_Triple_King"""
     row, col = square_location
     if not self._in_bound((row, col)):
       raise InvalidSquare("Invalid square entered.")
@@ -171,13 +176,24 @@ class Checkers:
     return capture_count
 
   def game_winner(self):
-    p1_moves = self._get_player_moves(0)
-    p2_moves = self._get_player_moves(1)
-    if p1_moves or p2_moves:
+    p1_moves = self._get_player_moves(BLACK)
+    p2_moves = self._get_player_moves(WHITE)
+    if p1_moves and p2_moves:
       return "Game has not ended"
+
+    # white to play and doesn't have any move
+    if not p2_moves and self.player_to_move_index == WHITE:
+      return self.players[BLACK].player_name  # black wins
+
+    # black to play and doesn't have any move
+    if not p1_moves and self.player_to_move_index == BLACK:
+      return self.players[WHITE].player_name  # white wins
+
     if p1_moves:
-      return self.players[0].player_name
-    return self.players[1].player_name
+      return self.players[BLACK].player_name
+
+    if p2_moves:
+      return self.players[WHITE].player_name
 
   # HELPER Methods
 
@@ -193,7 +209,7 @@ class Checkers:
           # [(start, destination, capture_count), ...]
           square_moves = [((r, c), m[0], m[1]) for m in square_moves]
           legal_moves += square_moves
-    max_capture_count = max(m[2] for m in legal_moves)
+    max_capture_count = max(m[2] for m in legal_moves) if legal_moves else -1
     captures = [m for m in legal_moves if m[2] == max_capture_count]
     return captures or legal_moves
 
@@ -285,10 +301,10 @@ class Checkers:
     # Check for promotion
     promoted = None
     # Promote to King if the piece reaches opponent's edge
-    if piece.lower() == 'white' and destination[0] == 0:
+    if piece.lower() == 'white' and destination[0] == 7:
       self.board[destination[0]][destination[1]] = 'White_king'
       promoted = 'White'
-    elif piece.lower() == 'black' and destination[0] == 7:
+    elif piece.lower() == 'black' and destination[0] == 0:
       self.board[destination[0]][destination[1]] = 'Black_king'
       promoted = 'Black'
 
@@ -417,42 +433,27 @@ game = Checkers()
 Player1 = game.create_player("Adam", "White")
 Player2 = game.create_player("Lucy", "Black")
 
-# game.play_game("Lucy", (5, 6), (4, 7))
-# game.play_game("Adam", (2, 1), (3, 0))
-# game.get_checker_details((3, 1))
-# Player1.get_captured_pieces_count()
+# game.board[3][2] = 'White'
+# game.board[4][3] = 'White'
+# game.board[5][2] = 'White'
+# game.board[5][4] = 'White'
+# game.board[1][4] = None
+# game.board[2][5] = 'Black'
+# game.board[5][6] = 'White'
+# game.board[4][3] = 'White'
+# game.board[5][2] = 'Black_Triple_king'
+# game.board[6][3] = 'White'
+# game.board[0][1] = None
+# game.board[0][5] = None
+# game.board[7][4] = None
 
-# Checkers:
-# - play_game
-# - game_winner
-# </>
-# - create_player
-# - print_board
-# - get_checker_details
 
-
-# game.board[3][4] = 'Black'
-# game.board[4][1] = 'Black_king'
-game.board[3][2] = 'White'
-game.board[4][3] = 'White'
-game.board[5][2] = 'White'
-game.board[5][4] = 'White'
-game.board[1][4] = None
-game.board[2][5] = 'Black'
-game.board[5][6] = 'White'
-game.board[4][3] = 'White'
-game.board[5][2] = 'Black_Triple_king'
-game.board[6][3] = 'White'
-game.board[0][1] = None
-game.board[0][5] = None
-# game.board[6][3] = None
-game.board[7][4] = None
-
-for r in range(8):
-  for c in range(8):
-    print((r, c) if game.board[r][c] else '-----', end=" ")
+def show_board_coord():
+  for r in range(8):
+    for c in range(8):
+      print((r, c) if game.board[r][c] else '-----', end=" ")
+    print("")
   print("")
-print("")
 
 
 def dump(title=""):
@@ -478,9 +479,7 @@ def dump(title=""):
   print('_______________')
 
 
-print(
-    game._get_legal_moves((4, 1))
-)
+# print(game._get_legal_moves((4, 1)))
 
 dump('INIT')
 # pieces = game._play_move((4, 1), (1, 4), True)
@@ -493,7 +492,5 @@ dump('INIT')
 # game.play_game('Lucy', (5, 2), (7, 4))
 # dump('POST-MOVE')
 
-print(game._get_player_moves(0))
-print(game._get_player_moves(1))
-
-print(game.game_winner())
+# print(game._get_player_moves(0))
+# print(game._get_player_moves(1))
