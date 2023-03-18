@@ -399,7 +399,7 @@ class Checkers:
         next_checker = self.get_checker_details(diagonal_squares[i+1])
         if piece not in checker:
           # mark for Triple friendly
-          if not friendly and next_checker == None and is_triple:
+          if is_triple:
             friendly = True
             continue
           break
