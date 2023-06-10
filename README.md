@@ -54,6 +54,7 @@ Your files must be named **CheckersGame.py** and **CheckersGameTester.py**
 
 For example, your classes will be used as below:
 
+```python
 game = Checkers()
 Player1 = game.create_player("Adam", "White")
 
@@ -66,3 +67,4 @@ game.play_game("Adam", (2,1), (3,0))
 game.get_checker_details((3,1))
 
 Player1.get_captured_pieces_count()
+```
